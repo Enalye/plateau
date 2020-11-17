@@ -7,31 +7,7 @@ import atelier;
 void loadAssets() {
     loadTextures();
     loadFonts();
-    loadBrushes();
     loadEntities();
-}
-
-void loadBrushes() {
-    auto brushCache = new ResourceCache!Brush;
-    setResourceCache!Brush(brushCache);
-
-    auto files = dirEntries(buildNormalizedPath("assets", "brush"), "{*.json}", SpanMode.depth);
-    foreach(file; files) {
-        JSONValue json = parseJSON(readText(file));
-
-        if(getJsonStr(json, "type") != "brush")
-            continue;
-        
-        auto brush = new Brush;
-        brush.name = getJsonStr(json, "name");
-        brush.tileset = getJsonStr(json, "tileset");
-        const auto neighbors = ["0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"];
-        const auto neighborsNode = getJson(json, "neighbors");
-        foreach(size_t i, string neighbor; neighbors) {
-            brush.neighbors[i] = getJsonInt(neighborsNode, neighbor);
-        }
-        brushCache.set(brush, brush.name);
-    }
 }
 
 void loadEntities() {

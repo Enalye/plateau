@@ -8,7 +8,7 @@ import startup.loader;
 
 void setupApplication(string[] args) {
 	//Initialization
-	createApplication(Vec2u(1280, 720), "Map Editor");
+	createApplication(Vec2u(1280, 720), "Plateau");
 
     const string iconPath = buildNormalizedPath("assets", "img", "logo.png");
 	if(exists(iconPath))

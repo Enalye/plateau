@@ -23,18 +23,16 @@ final class MenuBar: GuiElement {
         auto box = new HContainer;
         addChildGui(box);
 
-        const auto menuNames = ["file", "edit", "selection", "settings"];
-        const auto menuDisplayNames = ["Fichier", "Édition", "Sélection", "Paramètres"];
+        const auto menuNames = ["file", "edit", "settings"];
+        const auto menuDisplayNames = ["Fichier", "Édition", "Paramètres"];
         const auto menuItems = [
             ["file.open", "file.new", "file.close", "file.save", "file.saveas", "file.quit"],
-            ["edit.mapsettings", "edit.localesettings", "edit.test", "edit.cancel", "edit.restore"],
-            ["selection.fliph", "selection.flipv"],
+            ["edit.mapsettings"],
             ["settings.snap", "settings.grid", "settings.fullscreen"]
             ];
         const auto menuItemsDisplayNames = [
             ["Ouvrir (Ctrl+O)", "Nouveau (Ctrl+N)", "Fermer", "Enregistrer (Ctrl+S)", "Enregistrer sous..", "Quitter"],
-            ["Réglages de la carte", "Localisation", "Tester (F5)", "Annuler (Ctrl+Z)", "Restaurer (Ctrl+Y)"],
-            ["Retourner horizontalement (Ctrl+H)", "Retourner verticalement (Ctrl+V)"],
+            ["Réglages de la carte"],
             ["Alignement sur la grille", "Afficher l'arrière-plan", "Plein écran (F12)"]
             ];
         _menuSizes.length = menuNames.length;
@@ -259,42 +257,6 @@ private final class MenuButton: GuiElement {
             isClicked = false;
             isHovered = false;
             _editor.openSettings(false);
-            break;
-        case "edit.localesettings":
-            stopOverlay();
-            isClicked = false;
-            isHovered = false;
-            _editor.openLocaleSettings();
-            break;
-        case "edit.test":
-            stopOverlay();
-            isClicked = false;
-            isHovered = false;
-            _editor.testMap();
-            break;
-        case "edit.cancel":
-            stopOverlay();
-            isClicked = false;
-            isHovered = false;
-            _editor.cancelChange();
-            break;
-        case "edit.restore":
-            stopOverlay();
-            isClicked = false;
-            isHovered = false;
-            _editor.restoreChange();
-            break;
-        case "selection.fliph":
-            stopOverlay();
-            isClicked = false;
-            isHovered = false;
-            _editor.flipH();
-            break;
-        case "selection.flipv":
-            stopOverlay();
-            isClicked = false;
-            isHovered = false;
-            _editor.flipV();
             break;
         case "settings.snap":
             stopOverlay();

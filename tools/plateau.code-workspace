@@ -1,0 +1,14 @@
+{
+    "folders": [
+        {
+            "path": "../plateau"
+        },
+	{
+            "path": "../assets"
+        },
+        {
+            "path": "../atelier"
+        }
+    ],
+    "settings": {}
+}

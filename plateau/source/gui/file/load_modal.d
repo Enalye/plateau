@@ -40,14 +40,9 @@ final class LoadModal: GuiElement {
         _container.addChildGui(_searchField);
         _container.addChildGui(_list);
 
-        auto files = dirEntries(buildNormalizedPath("assets", "map", "camp"), "{*.json}", SpanMode.shallow);
+        auto files = dirEntries(buildNormalizedPath("assets", "map"), "{*.json}", SpanMode.shallow);
         foreach(file; files) {
             string fileName = buildNormalizedPath("camp", baseName(stripExtension(file)));
-            add(fileName);
-        }
-        files = dirEntries(buildNormalizedPath("assets", "map", "tactical"), "{*.json}", SpanMode.shallow);
-        foreach(file; files) {
-            string fileName = buildNormalizedPath("tactical", baseName(stripExtension(file)));
             add(fileName);
         }
 

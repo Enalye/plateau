@@ -3,23 +3,16 @@ module gui.editor;
 import std.path, std.file;
 import atelier;
 import common;
-import gui.menubar, gui.layerslist, gui.layerscontroler, gui.viewer, gui.tabslist;
-import gui.typeselector, gui.tileselector, gui.layerproperties, gui.file;
+import gui.menubar, gui.viewer, gui.tabslist;
+import gui.file;
 import gui.warning, gui.entityproperties, gui.snapsettings, gui.mapsettings;
-import gui.localesettings;
 
 final class Editor: GuiElement {
     private {
         MenuBar _menuBar;
-        LayersList _layersList;
         Viewer _viewer;
         TabsList _tabsList;
-        TypeSelector _typeSelector;
-        LayersControler _layersControler;
-        TileSelector _tileSelector;
-        LayerProperties _layerProperties;
         EntityProperties _entityProperties;
-
         Entity _editedEntity;
     }
 
@@ -27,36 +20,18 @@ final class Editor: GuiElement {
         size(screenSize);
 
         _menuBar = new MenuBar(this);
-        _layersList = new LayersList;
-        _layersList.setCallback(this, "layerslist");
-        _layersControler = new LayersControler(_layersList);
         _viewer = new Viewer(this);
 
         _tabsList = new TabsList;
         _tabsList.setCallback(this, "tabslist");
 
-        _typeSelector = new TypeSelector;
-        _typeSelector.setCallback(this, "type");
-
-        _tileSelector = new TileSelector;
-        _tileSelector.setCallback(this, "tiles");
-
-        _layerProperties = new LayerProperties;
-        _layerProperties.setCallback(this, "layerProperties");
-        _layerProperties.setState("hidden");
-
         _entityProperties = new EntityProperties;
         editEntity(null);
 
         addChildGui(_menuBar);
-        addChildGui(_layersControler);
-        addChildGui(_layersList);
         addChildGui(_viewer);
         addChildGui(_tabsList);
-        addChildGui(_typeSelector);
-        addChildGui(_layerProperties);
         addChildGui(_entityProperties);
-        addChildGui(_tileSelector);
     }
 
     override void update(float deltaTime) {}
@@ -67,19 +42,6 @@ final class Editor: GuiElement {
 
     override void onCallback(string id) {
         switch(id) {
-        case "layerslist":
-            if(_layersList.isSelectingData()) {
-                auto data = _layersList.getSelectedData();
-                _viewer.setLayer(data);
-                _tileSelector.setTileset(data.tileset);
-                _tileSelector.setState("visible");
-                _layerProperties.setData(data);
-                _layerProperties.setState("visible");
-            }
-            else {
-                _layerProperties.setState("hidden");
-            }
-            break;
         case "tabslist":
             if(!hasTab())
                 break;
@@ -106,47 +68,6 @@ final class Editor: GuiElement {
                 tabData.globalIllumination = modal.globalIllumination;
             }
             reload();
-            break;
-        case "locale":
-            auto modal = popModalGui!LocaleSettings();
-            if(!hasTab())
-                break;
-            TabData tabData = getCurrentTab();
-            tabData.locale = modal.locale;
-            break;
-        case "type":
-            final switch(_typeSelector.type) with(EditType) {
-            case layers:
-                _layersControler.setState("visible");
-                _layersList.setState("visible");
-                _tileSelector.setState("visible");
-                if(_layersList.isSelectingData()) {
-                    _tileSelector.setTileset(_layersList.getSelectedData().tileset);
-                }
-                break;
-            case entities:
-                _layersControler.setState("hidden");
-                _layersList.setState("hidden");
-                _tileSelector.setState("hidden");
-                _tileSelector.setTileset(null);
-                break;
-            }
-            reload();
-            break;
-        case "tiles":
-            _viewer.setTilesSelection(_tileSelector.selection);
-            break;
-        case "layerProperties":
-            if(_layersList.isSelectingData()) {
-                auto data = _layersList.getSelectedData();
-                if(_layerProperties.typeName.length)
-                    data.setTypeName(_layerProperties.typeName);
-                if(_layerProperties.tilesetName.length)
-                    data.setTilesetName(_layerProperties.tilesetName);
-                if(_layerProperties.brushName.length)
-                    data.setBrushName(_layerProperties.brushName);
-                reload();
-            }
             break;
         case "save.modal":
             auto saveModal = popModalGui!SaveModal;
@@ -182,41 +103,12 @@ final class Editor: GuiElement {
     }
 
     void reload() {
-        _layersList.reload();
-
         if(!hasTab()) {
             _menuBar.setMapName("");
-            _tileSelector.setState("hidden");
-            _tileSelector.setTileset(null);
-            _layerProperties.setState("hidden");
             editEntity(null);
-            _viewer.setLayer(null);
         }
         else {
             _menuBar.setMapName(getCurrentTab().dataPath);
-            _viewer.setEditType(_typeSelector.type);
-            if(_typeSelector.type != EditType.layers) {
-                _viewer.setLayer(null);
-                _tileSelector.setTileset(null);
-                _tileSelector.setState("hidden");
-                _layerProperties.setState("hidden");
-            }
-            else if(_layersList.isSelectingData()) {
-                auto data = _layersList.getSelectedData();
-                _viewer.setLayer(data);
-                _tileSelector.setTileset(data.tileset);
-                _tileSelector.setState("visible");
-                _layerProperties.setData(data);
-                _layerProperties.setState("visible");
-                editEntity(null);
-            }
-            else {
-                _viewer.setLayer(null);
-                _tileSelector.setTileset(null);
-                _tileSelector.setState("hidden");
-                _layerProperties.setState("hidden");
-                editEntity(null);
-            }
         }
         _viewer.reload();
     }
@@ -244,14 +136,6 @@ final class Editor: GuiElement {
         auto loadModal = new LoadModal;
         loadModal.setCallback(this, "load.modal");
         pushModalGui(loadModal);
-    }
-
-    void openLocaleSettings() {
-        if(!hasTab())
-            return;
-        auto modal = new LocaleSettings();
-        modal.setCallback(this, "locale");
-        pushModalGui(modal);
     }
 
     // Save an already saved project.
@@ -303,47 +187,8 @@ final class Editor: GuiElement {
         stopApplication();
     }
 
-    void testMap() {
-        import std.process: spawnShell;
-        if(!hasTab())
-            return;
-        TabData tabData = getCurrentTab();
-        if(!tabData.hasSavePath() ||tabData.isDirty()) {
-            auto gui = new WarningMessageGui("Impossible de tester une carte non-sauvegardée", "", "Ok");
-            gui.setCallback(this, "quit.modal");
-            pushModalGui(gui);
-            return;
-        }
-        string dataPath = tabData.dataPath;
-        string dir = baseName(dirName(dataPath));
-        string fileName = buildNormalizedPath(dir, baseName(stripExtension(dataPath)));
-        spawnShell("cd pzdv & dub run -- " ~ fileName);
-    }
-
     void toggleGrid() {
         _viewer.toggleGrid();
-    }
-
-    void flipH() {
-        _viewer.flipH();
-    }
-
-    void flipV() {
-        _viewer.flipV();
-    }
-
-    void cancelChange() {
-        if(_layersList.isSelectingData()) {
-            auto data = _layersList.getSelectedData();
-            data.cancelHistory();
-        }
-    }
-
-    void restoreChange() {
-        if(_layersList.isSelectingData()) {
-            auto data = _layersList.getSelectedData();
-            data.restoreHistory();
-        }
     }
 
     void openSnapSettings() {
