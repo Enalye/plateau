@@ -216,7 +216,7 @@ private final class MenuButton: GuiElement {
             stopOverlay();
             isClicked = false;
             isHovered = false;
-            _editor.openSettings(true);
+            _editor.create();
             break;
         case "file.open":
             stopOverlay();
@@ -256,7 +256,7 @@ private final class MenuButton: GuiElement {
             stopOverlay();
             isClicked = false;
             isHovered = false;
-            _editor.openSettings(false);
+            _editor.openSettings();
             break;
         case "settings.snap":
             stopOverlay();

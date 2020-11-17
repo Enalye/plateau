@@ -49,23 +49,11 @@ final class Editor: GuiElement {
             break;
         case "settings":
             auto modal = popModalGui!MapSettings();
-            if(modal.isNew) {
-                TabData tabData = createTab(modal.width, modal.height);
-                _tabsList.addTab();
-                tabData.isCameraBound = modal.isCameraBound;
-                tabData.weather = modal.weather;
-                tabData.script = modal.script;
-                tabData.globalIllumination = modal.globalIllumination;
-            }
-            else if(hasTab()) {
+            if(hasTab()) {
                 TabData tabData = getCurrentTab();
                 if(tabData.width != modal.width || tabData.height != modal.height) {
                     tabData.resize(modal.width, modal.height);
                 }
-                tabData.isCameraBound = modal.isCameraBound;
-                tabData.weather = modal.weather;
-                tabData.script = modal.script;
-                tabData.globalIllumination = modal.globalIllumination;
             }
             reload();
             break;
@@ -124,10 +112,15 @@ final class Editor: GuiElement {
         }
     }
 
-    void openSettings(bool isNew) {
-        if(!hasTab() && !isNew)
+    void create() {
+        TabData tabData = createTab(0, 0);
+        _tabsList.addTab();
+    }
+
+    void openSettings() {
+        if(!hasTab())
             return;
-        auto modal = new MapSettings(isNew);
+        auto modal = new MapSettings;
         modal.setCallback(this, "settings");
         pushModalGui(modal);
     }
