@@ -1,0 +1,29 @@
+{
+	"name": "plateau",
+	"authors": [
+		"Enalye"
+	],
+	"description": "plateau",
+	"copyright": "Enalye",
+	"dependencies": {
+		"atelier": {
+			"version": "~master",
+			"path": "../atelier"
+        }
+	},
+	"targetName": "plateau",
+	"targetType": "executable",
+	"workingDirectory": "..",
+	"configurations": [
+		{
+			"name": "linux-build",
+			"platforms": ["linux"],
+			"targetPath": "../bin"
+		},
+		{
+			"name": "windows-build",
+			"platforms": ["windows"],
+			"targetPath": "../bin$ARCH"
+		}
+	]
+}
