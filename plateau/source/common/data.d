@@ -327,21 +327,13 @@ final class TilesetLayerData {
 /// All the map's data in one tab.
 final class TabData {
     private {
-        TilesetLayerData[] _layers;
         Entity[] _entities;
         string _dataPath, _title = "untitled";
         uint _width = 1u, _height = 1u;
         bool _isTitleDirty =  true, _isDirty = true;
-        uint _tileWidth = 32, _tileHeight = 32;
-        bool _isCameraBound = false;
-        Weather _weather;
-        string _script;
-        float _globalIllumination = 1f;
-        Locale _locale;
     }
 
     @property {
-        TilesetLayerData[] layers() { return _layers; }
         Entity[] entities() { return _entities; }
         bool isTitleDirty(bool v) { return _isTitleDirty = v; }
         bool isTitleDirty() const { return _isTitleDirty; }
@@ -353,31 +345,11 @@ final class TabData {
         int width() const { return _width; }
         /// Ditto
         int height() const { return _height; }
-
-        int tileWidth() const { return _tileWidth; }
-        int tileHeight() const { return _tileHeight; }
-
-        bool isCameraBound() const { return _isCameraBound; }
-        bool isCameraBound(bool isBound) { _onDirty(); return _isCameraBound = isBound; }
-
-        Weather weather() const { return _weather; }
-        Weather weather(Weather weather_) { _onDirty(); return _weather = weather_; }
-
-        string script() const { return _script; }
-        string script(string script_) { _onDirty(); return _script = script_; }
-
-        float globalIllumination() const { return _globalIllumination; }
-        float globalIllumination(float globalIllumination_) { _onDirty(); return _globalIllumination = globalIllumination_; }
-
-        Locale locale() { return _locale; }
-        Locale locale(Locale locale_) { _onDirty(); return _locale = locale_; }
     }
 
     void resize(int width_, int height_) {
         _width = width_;
         _height = height_;
-        foreach(layer; _layers)
-            layer.resize(_width, _height);
         _onDirty();
     }
 
@@ -392,7 +364,7 @@ final class TabData {
         Entity smallestEntity;
         foreach (Entity entity; entities) {
             if(smallestEntity) {
-                if(entity.hitbox.sum() < smallestEntity.hitbox.sum())
+                if(entity.size.sum() < smallestEntity.size.sum())
                     smallestEntity = entity;
             }
             else {
@@ -591,19 +563,6 @@ bool hasTab() {
     return _tabs.length > 0uL;
 }
 
-TilesetLayerData[] getCurrentElements() {
-    if(_currentTabIndex >= _tabs.length)
-        throw new Exception("Tab index out of bounds");
-    return _tabs[_currentTabIndex]._layers;
-}
-
-void setCurrentElements(TilesetLayerData[] elements) {
-    if(_currentTabIndex >= _tabs.length)
-        throw new Exception("Tab index out of bounds");
-    _tabs[_currentTabIndex]._layers = elements;
-    _onDirty();
-}
-
 void setSavePath(string filePath) {
     if(_currentTabIndex >= _tabs.length)
         throw new Exception("Tab index out of bounds");
@@ -629,66 +588,7 @@ private void _loadData(TabData tabData) {
         return;
     tabData._width = getJsonInt(json, "width");
     tabData._height = getJsonInt(json, "height");
-    tabData._tileWidth = getJsonInt(json, "tileWidth", 32);
-    tabData._tileHeight = getJsonInt(json, "tileHeight", 32);
-    tabData._isCameraBound = getJsonBool(json, "isCameraBound", false);
-    switch(getJsonStr(json, "weather", "none")) {
-    case "none":
-        tabData._weather = Weather.none;
-        break;
-    case "sunny":
-        tabData._weather = Weather.sunny;
-        break;
-    default:
-        goto case "none";
-    }
-    tabData._globalIllumination = getJsonFloat(json, "globalIllumination", 1f);
-    tabData._script = getJsonStr(json, "script", "");
 
-    JSONValue[] layersNode = getJsonArray(json, "layers");
-    tabData._layers.length = 0uL;
-    foreach(JSONValue layerNode; layersNode) {
-        TilesetLayerData layer = new TilesetLayerData;
-        layer._name = getJsonStr(layerNode, "name");
-        layer._typeName = getJsonStr(layerNode, "type");
-        switch(layer._typeName) {
-        case "height":
-        case "sight":
-        case "movement":
-            layer._tilesetName = "editor.tactical";
-            break;
-        case "collision":
-            layer._tilesetName = "editor.collision";
-            break;
-        case "spawn":
-            layer._tilesetName = "editor.spawn";
-            break;
-        default:
-            layer._tilesetName = getJsonStr(layerNode, "tileset");
-            break;
-        }
-        layer._tileset = fetch!Tileset(layer._tilesetName);
-        layer._tileset.anchor = Vec2f.zero;
-        layer._brushName = getJsonStr(layerNode, "brush", "");
-        layer._width = getJsonInt(layerNode, "width");
-        layer._height = getJsonInt(layerNode, "height");
-        layer._tileWidth = getJsonInt(layerNode, "tileWidth");
-        layer._tileHeight = getJsonInt(layerNode, "tileHeight");
-        layer._isVisible = getJsonBool(layerNode, "visible");
-        
-        int[] tiles = getJsonArrayInt(layerNode, "tiles");
-        layer._tiles = new int[][](layer._width, layer._height);
-        int i;
-        for(int iy; iy < layer._height; ++ iy) {
-            for(int ix; ix < layer._width; ++ ix) {
-                layer._tiles[ix][iy] = tiles[i];
-                i ++;
-            }
-        }
-        layer.saveHistoryFrame(true);
-
-        tabData._layers ~= layer;
-    }
     if(hasJson(json, "entities")) {
         JSONValue[] entitiesNode = getJsonArray(json, "entities");
         foreach (JSONValue entityNode; entitiesNode) {
@@ -697,7 +597,6 @@ private void _loadData(TabData tabData) {
             tabData._entities ~= entity;
         }
     }
-    tabData._locale.load(json);
     tabData._isDirty = false;
 }
 
@@ -706,60 +605,12 @@ private void _saveData(TabData tabData) {
     json["type"] = "map";
     json["width"] = tabData._width;
     json["height"] = tabData._height;
-    json["tileWidth"] = tabData._tileWidth;
-    json["tileHeight"] = tabData._tileHeight;
-    json["isCameraBound"] = tabData._isCameraBound;
-    json["script"] = tabData._script;
-    final switch(tabData._weather) with(Weather) {
-    case none:
-        json["weather"] = "none";
-        break;
-    case sunny:
-        json["weather"] = "sunny";
-        break;
-    }
-    json["globalIllumination"] = tabData._globalIllumination;
-
-    JSONValue[] layersNode;
-    foreach(TilesetLayerData layer; tabData._layers) {
-        JSONValue layerNode;
-        layerNode["name"] = layer._name;
-        layerNode["type"] = layer._typeName;
-        switch(layer._typeName) {
-        case "height":
-        case "sight":
-        case "movement":
-        case "collision":
-        case "spawn":
-            break;
-        default:
-            layerNode["tileset"] = layer._tilesetName;
-            break;
-        }
-        layerNode["brush"] = layer._brushName;
-        layerNode["width"] = layer._width;
-        layerNode["height"] = layer._height;
-        layerNode["tileWidth"] = layer._tileWidth;
-        layerNode["tileHeight"] = layer._tileHeight;
-        layerNode["visible"] = layer._isVisible;
-
-        int[] tiles;
-        for(int iy; iy < layer._height; ++ iy) {
-            for(int ix; ix < layer._width; ++ ix) {
-                tiles ~= layer._tiles[ix][iy];
-            }
-        }
-        layerNode["tiles"] = tiles;
-        layersNode ~= layerNode;
-    }
-    json["layers"] = layersNode;
 
     JSONValue[] entitiesNode;
     foreach (Entity entity; tabData._entities) {
         entitiesNode ~= entity.save();
     }
     json["entities"] = entitiesNode;
-    tabData._locale.save(json);
     std.file.write(tabData._dataPath, toJSON(json));
     tabData._isDirty = false;
 }

@@ -8,16 +8,8 @@ import common;
 final class MapSettings: GuiElement {
     private {
         InputField _widthField, _heightField;
-        DropDownList _weatherSelector, _scriptSelector;
-        Checkbox _cameraBoundCB;
-        HSlider _globalIlluminationSlider;
         TextButton _applyBtn;
-        bool _isNew;
         uint _width, _height;
-        bool _isCameraBound;
-        Weather _weather;
-        string _script;
-        float _globalIllumination;
     }
 
     @property {

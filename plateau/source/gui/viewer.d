@@ -33,8 +33,8 @@ final class Viewer: GuiElement {
 
     this(Editor editor) {
         _editor = editor;
-        position(Vec2f(layersListWidth, (barHeight + tabsHeight)));
-        size(Vec2f(screenWidth - layersListWidth, screenHeight - (barHeight + tabsHeight)));
+        position(Vec2f(propertiesWidth, (barHeight + tabsHeight)));
+        size(Vec2f(screenWidth - propertiesWidth, screenHeight - (barHeight + tabsHeight)));
         _timer.mode = Timer.Mode.bounce;
         _timer.start(5f);
 		super(GuiElement.Flags.canvas);
@@ -45,9 +45,11 @@ final class Viewer: GuiElement {
     }
 
     override void onEvent(Event event) {
+        if(!hasTab())
+            return;
         switch(event.type) with(EventType) {
         case resize:
-            size(Vec2f(event.window.size.x - layersListWidth, event.window.size.y - (barHeight + tabsHeight)));
+            size(Vec2f(event.window.size.x - propertiesWidth, event.window.size.y - (barHeight + tabsHeight)));
             break;
         case mouseUpdate:
             _cursorPosition = event.mouse.position;
@@ -131,27 +133,16 @@ final class Viewer: GuiElement {
                 int i;
                 foreach (Entity entity; _selectedEntities) {
                     _unsnappedEntityPositions[i] += deltaPosition;
-                    if(entity.isTilable) {
-                        entity.position = (cast(Vec2i) ((cast(Vec2f) (_unsnappedEntityPositions[i] - 16) / 32).round() * 32)) + 16;
-                    }
-                    else {
-                        const float snapValue = cast(float) getSnapValue();
-                        entity.position = cast(Vec2i) ((cast(Vec2f) _unsnappedEntityPositions[i] / snapValue).round() * snapValue);
-                    }
+                    const float snapValue = cast(float) getSnapValue();
+                    entity.position = cast(Vec2i) ((cast(Vec2f) _unsnappedEntityPositions[i] / snapValue).round() * snapValue);
                     i ++;
                 }
             }
             else {
                 int i;
                 foreach (Entity entity; _selectedEntities) {
-                    if(entity.isTilable) {
-                        _unsnappedEntityPositions[i] += deltaPosition;
-                        entity.position = (cast(Vec2i) ((cast(Vec2f) (_unsnappedEntityPositions[i] - 16) / 32).round() * 32)) + 16;
-                    }
-                    else {
-                        entity.position = entity.position + deltaPosition;
-                        _unsnappedEntityPositions[i] = entity.position;
-                    }
+                    entity.position = entity.position + deltaPosition;
+                    _unsnappedEntityPositions[i] = entity.position;
                     i ++;
                 }
             }
@@ -198,6 +189,8 @@ final class Viewer: GuiElement {
                 entity.setGrab(true);
             if(_selectedEntities.length)
                 _editor.editEntity(_selectedEntities[0]);
+            else
+                _editor.editEntity(null);
             _unsnappedEntityPositions.length = 0;
             foreach (Entity sub; _selectedEntities) {
                 _unsnappedEntityPositions ~= sub.position;
@@ -238,6 +231,8 @@ final class Viewer: GuiElement {
     }
 
     override void onCallback(string id) {
+        if(!hasTab())
+            return;
         switch(id) {
         case "addEntity":
             if(_entitySelector.value.length) {
@@ -255,6 +250,8 @@ final class Viewer: GuiElement {
     }
 
     override void update(float deltaTime) {
+        if(!hasTab())
+            return;
         _timer.update(deltaTime);
 
         if(!isHovered) {
@@ -289,28 +286,31 @@ final class Viewer: GuiElement {
     }
 
     override void draw() {
+        if(!hasTab())
+            return;
         if(!_currentTabData)
             return;
-
-        drawFilledRect(-Vec2f.one * 5f, Vec2f(
-            _currentTabData.width * _currentTabData.tileWidth,
-            _currentTabData.height * _currentTabData.tileHeight) + 2f * 5f,
-            Color.red);
-
-        drawFilledRect(Vec2f.zero, Vec2f(
-            _currentTabData.width * _currentTabData.tileWidth,
-            _currentTabData.height * _currentTabData.tileHeight),
-            Color.black);
+/*
+        if(_currentTabData.width > 0f && _currentTabData.height > 0f) {
+            drawFilledRect(-Vec2f.one * 5f,
+                Vec2f(_currentTabData.width, _currentTabData.height) + 2f * 5f,
+                Color.red);
+        }*/
+/*
+        drawFilledRect(Vec2f.zero,
+            Vec2f(_currentTabData.width, _currentTabData.height),
+            Color.black);*/
 
         if(_showGrid) {
             const Color c1 = Color(0.74f, 0.74f, 0.74f);
             const Color c2 = Color(0.49f, 0.49f, 0.49f);
             int x, y, i;
+            const int snapValue = getSnapValue();
             for(y = 0; y < _currentTabData.height; ++ y) {
                 for(x = 0; x < _currentTabData.width; ++ x) {
                     drawFilledRect(
-                        Vec2f(x * _currentTabData.tileWidth, y * _currentTabData.tileHeight),
-                        Vec2f(_currentTabData.tileWidth, _currentTabData.tileHeight),
+                        Vec2f(x * snapValue, y * snapValue),
+                        Vec2f(snapValue, snapValue),
                         i % 2 > 0 ? c1 : c2);
                     i ++;
                 }

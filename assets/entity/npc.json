@@ -1,0 +1,9 @@
+{
+    "type": "entity",
+    "entities": [
+        {
+            "id": "Rond",
+            "img": "entity.circle"
+        }
+    ]
+}

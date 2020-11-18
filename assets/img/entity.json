@@ -1,0 +1,16 @@
+{
+    "elements": [
+        {
+            "clip": {
+                "h": 80,
+                "w": 80,
+                "x": 0,
+                "y": 0
+            },
+            "name": "entity.circle",
+            "type": "sprite"
+        }
+    ],
+    "texture": "entity.png",
+    "type": "spritesheet"
+}

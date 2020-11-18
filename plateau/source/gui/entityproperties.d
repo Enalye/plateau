@@ -9,14 +9,11 @@ import gui.constants, gui.search;
 final class EntityProperties: GuiElement {
     private {
         SearchList _entitySelector;
-        DropDownList _dirSelector, _behaviorSelector, _mapSelector;
-        InputField _nameField, _xPosField, _yPosField, _wField, _hField, _flagsField, _tpField, _factionField;
-        string _currentTileset, _currentType, _currentBrush;
+        InputField _nameField, _xPosField, _yPosField, _wField, _hField;
         bool _ignoreCallbacks;
         Entity _currentEntity;
         VContainer _container;
         HSlider _rSlider, _gSlider, _bSlider, _aSlider;
-        Checkbox _collidableCB;
     }
 
     @property {
@@ -24,7 +21,7 @@ final class EntityProperties: GuiElement {
 
     this() {
         position(Vec2f(0f, barHeight + tabsHeight));
-        size(Vec2f(layersListWidth, screenHeight - (barHeight + tabsHeight)));
+        size(Vec2f(propertiesWidth, screenHeight - (barHeight + tabsHeight)));
         setAlign(GuiAlignX.left, GuiAlignY.top);
 
         { //Title
@@ -99,8 +96,7 @@ final class EntityProperties: GuiElement {
             box.addChildGui(_yPosField);
         }
 
-        // Hitbox
-        if(!_currentEntity.isTilable) {
+        {
             auto box = new HContainer;
             box.setAlign(GuiAlignX.left, GuiAlignY.center);
             box.spacing = Vec2f(5f, 0f);
@@ -109,7 +105,7 @@ final class EntityProperties: GuiElement {
             box.addChildGui(new Label("w:"));
 
             _wField = new InputField(Vec2f(50f, 25f));
-            _wField.text = to!string(_currentEntity.hitbox.x);
+            _wField.text = to!string(_currentEntity.size.x);
             _wField.setAllowedCharacters("-0123456789");
             _wField.setCallback(this, "w");
             box.addChildGui(_wField);
@@ -117,7 +113,7 @@ final class EntityProperties: GuiElement {
             box.addChildGui(new Label("h:"));
 
             _hField = new InputField(Vec2f(50f, 25f));
-            _hField.text = to!string(_currentEntity.hitbox.y);
+            _hField.text = to!string(_currentEntity.size.y);
             _hField.setAllowedCharacters("-0123456789");
             _hField.setCallback(this, "h");
             box.addChildGui(_hField);
@@ -136,70 +132,7 @@ final class EntityProperties: GuiElement {
             box.addChildGui(_nameField);
         }
 
-        { // Flags
-            auto box = new HContainer;
-            box.setAlign(GuiAlignX.left, GuiAlignY.center);
-            box.spacing = Vec2f(5f, 0f);
-            _container.addChildGui(box);
-
-            box.addChildGui(new Label("Flags:"));
-            _flagsField = new InputField(Vec2f(150f, 25f));
-            _flagsField.text = _currentEntity.flags;
-            _flagsField.setCallback(this, "flags");
-            box.addChildGui(_flagsField);
-        }
-
-        // Direction
-        if(_currentEntity.dirsCount() > 1) {
-            auto box = new HContainer;
-            box.setAlign(GuiAlignX.left, GuiAlignY.center);
-            box.spacing = Vec2f(5f, 0f);
-            _container.addChildGui(box);
-
-            box.addChildGui(new Label("Direction:"));
-
-            _dirSelector = new DropDownList(Vec2f(125f, 25f), 5);
-            switch(_currentEntity.dirsCount()) {
-            case 1:
-                _dirSelector.add("Aucun");
-                break;
-            case 2:
-                _dirSelector.add("Nord");
-                _dirSelector.add("Sud");
-                break;
-            case 4:
-                _dirSelector.add("Nord");
-                _dirSelector.add("Est");
-                _dirSelector.add("Sud");
-                _dirSelector.add("Ouest");
-                break;
-            case 6:
-                _dirSelector.add("Nord-est");
-                _dirSelector.add("Est");
-                _dirSelector.add("Sud-est");
-                _dirSelector.add("Sud-ouest");
-                _dirSelector.add("Ouest");
-                _dirSelector.add("Nord-ouest");
-                break;
-            case 8:
-                _dirSelector.add("Nord");
-                _dirSelector.add("Nord-est");
-                _dirSelector.add("Est");
-                _dirSelector.add("Sud-est");
-                _dirSelector.add("Sud");
-                _dirSelector.add("Sud-ouest");
-                _dirSelector.add("Ouest");
-                _dirSelector.add("Nord-ouest");
-                break;
-            default:
-                goto case 1;
-            }
-            _dirSelector.selected(_currentEntity.direction);
-            _dirSelector.setCallback(this, "dir");
-            box.addChildGui(_dirSelector);
-        }
-
-        if(_currentEntity.type == "light") {
+        {
             const Color barColor = Color(_currentEntity.red, _currentEntity.green, _currentEntity.blue);
             {
                 auto box = new HContainer;
@@ -266,89 +199,6 @@ final class EntityProperties: GuiElement {
                 box.addChildGui(_aSlider);
             }
         }
-        if(_currentEntity.type == "prop" || _currentEntity.type == "collider") {
-            auto box = new HContainer;
-            box.setAlign(GuiAlignX.left, GuiAlignY.center);
-            box.spacing = Vec2f(5f, 0f);
-            _container.addChildGui(box);
-
-            box.addChildGui(new Label("Collision ?:"));
-
-            _collidableCB = new Checkbox;
-            _collidableCB.value = _currentEntity.isCollidable;
-            _collidableCB.setCallback(this, "isCollidable");
-            box.addChildGui(_collidableCB);
-        }
-        if(_currentEntity.type == "tank") {
-            {           
-                auto box = new HContainer;
-                box.setAlign(GuiAlignX.left, GuiAlignY.center);
-                box.spacing = Vec2f(5f, 0f);
-                _container.addChildGui(box);
-
-                box.addChildGui(new Label("Behavior:"));
-
-                _behaviorSelector = new DropDownList(Vec2f(125f, 25f), 5);
-                _behaviorSelector.add("playable");
-                _behaviorSelector.add("passive");
-                _behaviorSelector.add("easy");
-                _behaviorSelector.setSelectedName(_currentEntity.behavior);
-                _behaviorSelector.setCallback(this, "behavior");
-                box.addChildGui(_behaviorSelector);
-            }
-            
-            {
-                auto box = new HContainer;
-                box.setAlign(GuiAlignX.left, GuiAlignY.center);
-                box.spacing = Vec2f(5f, 0f);
-                _container.addChildGui(box);
-
-                box.addChildGui(new Label("Faction:"));
-
-                _factionField = new InputField(Vec2f(125f, 25f));
-                _factionField.text = to!string(_currentEntity.faction);
-                _factionField.setAllowedCharacters("0123456789");
-                _factionField.setCallback(this, "faction");
-                box.addChildGui(_factionField);
-            }
-        }
-        if(_currentEntity.type == "teleporter") {
-            {
-                auto box = new HContainer;
-                box.setAlign(GuiAlignX.left, GuiAlignY.center);
-                box.spacing = Vec2f(5f, 0f);
-                _container.addChildGui(box);
-
-                box.addChildGui(new Label("Carte:"));
-                _mapSelector = new DropDownList(Vec2f(175f, 25f), 5);
-
-                auto files = dirEntries(buildNormalizedPath("assets", "map", "camp"), "{*.json}", SpanMode.shallow);
-                foreach(file; files) {
-                    string fileName = buildNormalizedPath("camp", baseName(stripExtension(file)));
-                    _mapSelector.add(fileName);
-                }
-                files = dirEntries(buildNormalizedPath("assets", "map", "tactical"), "{*.json}", SpanMode.shallow);
-                foreach(file; files) {
-                    string fileName = buildNormalizedPath("tactical", baseName(stripExtension(file)));
-                    _mapSelector.add(fileName);
-                }
-                _mapSelector.setSelectedName(_currentEntity.map);
-                _mapSelector.setCallback(this, "map");
-                box.addChildGui(_mapSelector);
-            }
-            {
-                auto box = new HContainer;
-                box.setAlign(GuiAlignX.left, GuiAlignY.center);
-                box.spacing = Vec2f(5f, 0f);
-                _container.addChildGui(box);
-
-                box.addChildGui(new Label("TP:"));
-                _tpField = new InputField(Vec2f(150f, 25f));
-                _tpField.text = _currentEntity.tpName;
-                _tpField.setCallback(this, "tp");
-                box.addChildGui(_tpField);
-            }
-        }
     }
     
     void setData(Entity entity) {
@@ -373,7 +223,7 @@ final class EntityProperties: GuiElement {
     override void onEvent(Event event) {
         switch(event.type) with(EventType) {
         case resize:
-            size(Vec2f(layersListWidth, event.window.size.y - (barHeight + tabsHeight + layersListHeight + layersControlerHeight)));
+            size(Vec2f(propertiesWidth, event.window.size.y - (barHeight + tabsHeight)));
             break;
         default:
             break;
@@ -384,32 +234,8 @@ final class EntityProperties: GuiElement {
         if(_ignoreCallbacks)
             return;
         switch(id) {
-        case "type":
-            const string newPropId = _entitySelector.getSelectedName();
-            if(_currentEntity.id == newPropId)
-                break;
-            _currentEntity.id = newPropId;
-            reload();
-            break;
-        case "dir":
-            _currentEntity.direction = _dirSelector.selected();
-            break;
         case "name":
             _currentEntity.name = _nameField.text;
-            break;
-        case "flags":
-            _currentEntity.flags = _flagsField.text;
-            break;
-        case "behavior":
-            _currentEntity.behavior = _behaviorSelector.getSelectedName();
-            break;
-        case "faction":
-            try {
-                const int factionId = to!int(_factionField.text);
-                _currentEntity.faction = factionId;
-            }
-            catch(Exception e) {
-            }
             break;
         case "x":
             try {
@@ -429,16 +255,16 @@ final class EntityProperties: GuiElement {
             break;
         case "w":
             try {
-                const int wPos = to!int(_wField.text);
-                _currentEntity.hitbox = Vec2i(wPos, _currentEntity.hitbox.y);
+                const float width = to!float(_wField.text);
+                _currentEntity.size = Vec2f(width, _currentEntity.size.y);
             }
             catch(Exception e) {
             }
             break;
         case "h":
             try {
-                const int hPos = to!int(_hField.text);
-                _currentEntity.hitbox = Vec2i(_currentEntity.hitbox.x, hPos);
+                const float height = to!float(_hField.text);
+                _currentEntity.size = Vec2f(_currentEntity.size.x, height);
             }
             catch(Exception e) {
             }
@@ -469,15 +295,6 @@ final class EntityProperties: GuiElement {
             break;
         case "a":
             _currentEntity.alpha = _aSlider.fvalue;
-            break;
-        case "isCollidable":
-            _currentEntity.isCollidable = _collidableCB.value;
-            break;
-        case "map":
-            _currentEntity.map = _mapSelector.getSelectedName();
-            break;
-        case "tp":
-            _currentEntity.tpName = _tpField.text;
             break;
         default:
             break;

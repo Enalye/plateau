@@ -107,6 +107,9 @@ final class Editor: GuiElement {
         case resize:
             size = cast(Vec2f) event.window.size;
             break;
+        case dropFile:
+            //event.drop.filePath;
+            break;
         default:
             break;
         }
@@ -115,6 +118,7 @@ final class Editor: GuiElement {
     void create() {
         TabData tabData = createTab(0, 0);
         _tabsList.addTab();
+        reload();
     }
 
     void openSettings() {

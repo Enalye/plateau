@@ -11,8 +11,8 @@ final class TabsList: GuiElement {
     }
 
     this() {
-        position(Vec2f(layersListWidth, barHeight));
-        size(Vec2f(screenWidth - layersListWidth, tabsHeight));
+        position(Vec2f(0f, barHeight));
+        size(Vec2f(screenWidth, tabsHeight));
         setEventHook(true);
 
         _box = new HContainer;
@@ -23,7 +23,7 @@ final class TabsList: GuiElement {
     override void onEvent(Event event) {
         switch(event.type) with(EventType) {
         case resize:
-            size(Vec2f(event.window.size.x - layersListWidth, tabsHeight));
+            size(Vec2f(event.window.size.x, tabsHeight));
             break;
         case mouseWheel:
             const float delta = event.scroll.delta.y - event.scroll.delta.x;
