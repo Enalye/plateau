@@ -22,6 +22,10 @@ final class Entity {
         float _alpha = 1f;
 
         Label _label;
+        bool _isRemoved;
+        Timer _fxTimer;
+
+        TabData _tabData;
     }
 
     @property {
@@ -125,7 +129,8 @@ final class Entity {
         }
     }
 
-    void setLabel(Label label) {
+    void setData(TabData tabData, Label label) {
+        _tabData = tabData;
         _label = label;
         _label.text = _name;
         _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
@@ -150,8 +155,29 @@ final class Entity {
     }
 
     void onRemove() {
-        if(_label)
-            _label.removeSelfGui();
+        if(_isRemoved)
+            return;
+        _isRemoved = true;
+        _fxTimer.start(5f);
+    }
+
+    void update(float deltaTime) {
+        if(!_isSpawned)
+            return;
+        _fxTimer.update(deltaTime);
+        if(_isRemoved && !_fxTimer.isRunning) {
+            _tabData.removeEntity(this);
+            if(_label)
+                _label.removeSelfGui();
+        }
+
+        if(_label) {
+            _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
+            if(_isRemoved)
+                _label.alpha = lerp(1f, 0f, easeInOutSine(_fxTimer.value01));
+            else
+                _label.alpha = 1f;
+        }
     }
 
     void draw() {
@@ -160,31 +186,35 @@ final class Entity {
         if(_currentSprite) {
             _currentSprite.size = _size;
             _currentSprite.color = _color;
-            _currentSprite.alpha = _alpha;
+            if(_isRemoved)
+                _currentSprite.alpha = lerp(_alpha, 0f, easeInOutSine(_fxTimer.value01));
+            else
+                _currentSprite.alpha = _alpha;
             _currentSprite.draw(cast(Vec2f) _position);
         }
 
-        if(_isEdited && _isGrabbed) {
-            drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.blue);
-        }
-        else if(_isEdited) {
-            drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.orange);
-        }
-        else if(_isGrabbed) {
-            drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.white);
-        }
-
-        if(_label) {
-            _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
-            _label.draw();
+        if(!_isRemoved) {
+            if(_isEdited && _isGrabbed) {
+                drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.blue);
+            }
+            else if(_isEdited) {
+                drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.orange);
+            }
+            else if(_isGrabbed) {
+                drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.white);
+            }
         }
     }
 
     bool collideWith(Vec2i position_) {
+        if(_isRemoved)
+            return false;
         return (cast(Vec2f) position_).isBetween((cast(Vec2f) _position) - (_size / 2f), (cast(Vec2f) _position) + (_size / 2f));
     }
 
     bool isInside(Vec2i start, Vec2i end) {
+        if(_isRemoved)
+            return false;
         return _position.isBetween(start, end);
     }
 

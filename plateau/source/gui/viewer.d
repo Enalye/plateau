@@ -250,7 +250,7 @@ final class Viewer: GuiElement {
                 entity.position = _entitySelector.targetPosition;
                 auto label = new Label;
                 addChildGui(label);
-                entity.setLabel(label);
+                entity.setData(_currentTabData, label);
                 _currentTabData.addEntity(entity);
                 _editor.editEntity(entity);
             }
@@ -280,7 +280,6 @@ final class Viewer: GuiElement {
                 if(getButtonDown(KeyButton.remove)) {
                     foreach (Entity entity; _selectedEntities) {
                         entity.onRemove();
-                        _currentTabData.removeEntity(entity);
                     }
                     _selectedEntities.length = 0;
                     _isEntityGrabbed = false;
@@ -296,6 +295,10 @@ final class Viewer: GuiElement {
                     }
                 }
             }
+        }
+
+        foreach (entity; _currentTabData.entities) {
+            entity.update(deltaTime);
         }
     }
 
