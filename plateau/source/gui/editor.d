@@ -108,7 +108,10 @@ final class Editor: GuiElement {
             size = cast(Vec2f) event.window.size;
             break;
         case dropFile:
-            //event.drop.filePath;
+            if(hasTab) {
+                setTabDataBackground(event.drop.filePath);
+                _viewer.reloadBackground();
+            }
             break;
         default:
             break;

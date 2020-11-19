@@ -1,6 +1,7 @@
 module gui.viewer;
 
 import std.algorithm: canFind;
+import std.file: exists;
 import std.conv: to;
 import atelier;
 import common;
@@ -17,26 +18,20 @@ final class Viewer: GuiElement {
 		Vec2f _startMovingCursorPosition, _cursorPosition = Vec2f.zero;
 		bool _isGrabbed;
         float _scale = 1f;
-        Timer _timer;
-        
-        TilesSelection _tilesSelection;
-        Brush _brush;
-
-        Vec2i _tileSize = Vec2i(32, 32);
 
         EntitySelector _entitySelector;
         bool _isEntityGrabbed, _isSelectingEntity;
         Entity[] _selectedEntities;
         Vec2i[] _unsnappedEntityPositions;
         Editor _editor;
+
+        Sprite _background;
     }
 
     this(Editor editor) {
         _editor = editor;
         position(Vec2f(propertiesWidth, (barHeight + tabsHeight)));
         size(Vec2f(screenWidth - propertiesWidth, screenHeight - (barHeight + tabsHeight)));
-        _timer.mode = Timer.Mode.bounce;
-        _timer.start(5f);
 		super(GuiElement.Flags.canvas);
     }
 
@@ -198,6 +193,20 @@ final class Viewer: GuiElement {
         }
     }
 
+    void reloadBackground() {
+        if(!hasTab()) {
+            _background = null;
+            return;
+        }
+        auto tabData = getCurrentTab();
+        if(!exists(tabData.background)) {
+            _background = null;
+            return;
+        }
+        auto tex = new Texture(tabData.background);
+        _background = new Sprite(tex);
+    }
+
     void reload() {
         if(hasTab()) {
             auto tabData = getCurrentTab();
@@ -228,6 +237,7 @@ final class Viewer: GuiElement {
             canvas.size = size * _scale;
             _currentTabData = null;
         }
+        reloadBackground();
     }
 
     override void onCallback(string id) {
@@ -255,7 +265,6 @@ final class Viewer: GuiElement {
     override void update(float deltaTime) {
         if(!hasTab())
             return;
-        _timer.update(deltaTime);
 
         if(!isHovered) {
             _isSelecting = false;
@@ -305,6 +314,11 @@ final class Viewer: GuiElement {
         drawFilledRect(Vec2f.zero,
             Vec2f(_currentTabData.width, _currentTabData.height),
             Color.black);*/
+
+        if(_background) {
+            _background.anchor = Vec2f.zero;
+            _background.draw(Vec2f.zero);
+        }
 
         if(_showGrid) {
             const Color c1 = Color(0.74f, 0.74f, 0.74f);
