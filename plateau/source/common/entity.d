@@ -5,6 +5,8 @@ import std.conv: to;
 import atelier;
 import common.data;
 
+private enum _labelOffset = 25f;
+
 final class Entity {
     private {
         Vec2i _position;
@@ -18,6 +20,8 @@ final class Entity {
         //Light
         Color _color = Color.white;
         float _alpha = 1f;
+
+        Label _label;
     }
 
     @property {
@@ -26,6 +30,8 @@ final class Entity {
             if(_name != name_) {
                 onEntityDirty();
                 _name = name_;
+                if(_label)
+                    _label.text = _name;
             }
             return _name;
         }
@@ -45,6 +51,8 @@ final class Entity {
             if(_position != position_) {
                 onEntityDirty();
                 _position = position_;
+                if(_label)
+                    _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
             }
             return _position;
         }
@@ -117,6 +125,12 @@ final class Entity {
         }
     }
 
+    void setLabel(Label label) {
+        _label = label;
+        _label.text = _name;
+        _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
+    }
+
     void reload() {
         const Entity copy = fetch!Entity(_id);
         _sprite = copy._sprite;
@@ -133,6 +147,11 @@ final class Entity {
             if(_size.y <= 0f)
                 _size.y = _currentSprite.size.y;
         }
+    }
+
+    void onRemove() {
+        if(_label)
+            _label.removeSelfGui();
     }
 
     void draw() {
@@ -153,6 +172,11 @@ final class Entity {
         }
         else if(_isGrabbed) {
             drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.white);
+        }
+
+        if(_label) {
+            _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
+            _label.draw();
         }
     }
 

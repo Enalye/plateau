@@ -238,6 +238,9 @@ final class Viewer: GuiElement {
             if(_entitySelector.value.length) {
                 Entity entity = fetch!Entity(_entitySelector.value);
                 entity.position = _entitySelector.targetPosition;
+                auto label = new Label;
+                addChildGui(label);
+                entity.setLabel(label);
                 _currentTabData.addEntity(entity);
                 _editor.editEntity(entity);
             }
@@ -266,8 +269,10 @@ final class Viewer: GuiElement {
         else {
             if(_selectedEntities.length) {
                 if(getButtonDown(KeyButton.remove)) {
-                    foreach (Entity entity; _selectedEntities)
+                    foreach (Entity entity; _selectedEntities) {
+                        entity.onRemove();
                         _currentTabData.removeEntity(entity);
+                    }
                     _selectedEntities.length = 0;
                     _isEntityGrabbed = false;
                     _isSelecting = false;
