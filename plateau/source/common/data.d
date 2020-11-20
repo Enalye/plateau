@@ -18,8 +18,8 @@ final class TabData {
     private {
         Entity[] _entities;
         string _dataPath, _title = "untitled";
-        uint _width = 1u, _height = 1u;
-        bool _isTitleDirty =  true, _isDirty = true;
+        uint _width = 1u, _height = 1u, _gridAlign = 16u;
+        bool _isTitleDirty =  true, _isDirty = true, _showGrid;
         string _background;
     }
 
@@ -37,6 +37,19 @@ final class TabData {
         int height() const { return _height; }
 
         string background() const { return _background; }
+        uint gridAlign(uint gridAlign_) {
+            _gridAlign = gridAlign_;
+            _onDirty();
+            return _gridAlign;
+        }
+        uint gridAlign() const { return _gridAlign; }
+
+        bool showGrid(bool showGrid_) {
+            _showGrid = showGrid_;
+            _onDirty();
+            return _showGrid;
+        }
+        bool showGrid() const { return _showGrid; }
     }
 
     void resize(int width_, int height_) {
@@ -289,6 +302,8 @@ private void _loadData(TabData tabData) {
     tabData._width = getJsonInt(json, "width", 0);
     tabData._height = getJsonInt(json, "height", 0);
     tabData._background = getJsonStr(json, "background", "");
+    tabData._gridAlign = getJsonInt(json, "gridAlign", 16);
+    tabData._showGrid = getJsonBool(json, "showGrid", false);
 
     if(hasJson(json, "entities")) {
         JSONValue[] entitiesNode = getJsonArray(json, "entities");
@@ -307,6 +322,8 @@ private void _saveData(TabData tabData) {
     json["width"] = tabData._width;
     json["height"] = tabData._height;
     json["background"] = tabData._background;
+    json["gridAlign"] = tabData._gridAlign;
+    json["showGrid"] = tabData._showGrid;
 
     JSONValue[] entitiesNode;
     foreach (Entity entity; tabData._entities) {

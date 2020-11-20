@@ -30,13 +30,18 @@ final class Viewer: GuiElement {
 
     this(Editor editor) {
         _editor = editor;
-        position(Vec2f(propertiesWidth, (barHeight + tabsHeight)));
-        size(Vec2f(screenWidth - propertiesWidth, screenHeight - (barHeight + tabsHeight)));
+        position(Vec2f(0f, (barHeight + tabsHeight)));
+        size(Vec2f(screenWidth, screenHeight - (barHeight + tabsHeight)));
 		super(GuiElement.Flags.canvas);
     }
 
     void toggleGrid() {
         _showGrid = !_showGrid;
+        
+        if(!hasTab())
+            return;
+        TabData tabData = getCurrentTab();
+        tabData.showGrid = _showGrid;
     }
 
     override void onEvent(Event event) {
@@ -44,7 +49,7 @@ final class Viewer: GuiElement {
             return;
         switch(event.type) with(EventType) {
         case resize:
-            size(Vec2f(event.window.size.x - propertiesWidth, event.window.size.y - (barHeight + tabsHeight)));
+            size(Vec2f(event.window.size.x, event.window.size.y - (barHeight + tabsHeight)));
             break;
         case mouseUpdate:
             _cursorPosition = event.mouse.position;
@@ -129,7 +134,9 @@ final class Viewer: GuiElement {
                 foreach (Entity entity; _selectedEntities) {
                     _unsnappedEntityPositions[i] += deltaPosition;
                     const float snapValue = cast(float) getSnapValue();
-                    entity.position = cast(Vec2i) ((cast(Vec2f) _unsnappedEntityPositions[i] / snapValue).round() * snapValue);
+                    entity.position = cast(Vec2i) (
+                        ((((cast(Vec2f) _unsnappedEntityPositions[i]) / snapValue) + 0.5f).round() * snapValue)
+                        - (snapValue / 2f));
                     i ++;
                 }
             }
@@ -193,7 +200,14 @@ final class Viewer: GuiElement {
         }
     }
 
-    void reloadBackground() {
+    Vec2i getBackgroundSize() {
+        if(_background)
+            return _background.clip.zw;
+        else
+            return Vec2i.zero;
+    }
+
+    void reloadBackground(bool resize = false) {
         if(!hasTab()) {
             _background = null;
             return;
@@ -205,6 +219,12 @@ final class Viewer: GuiElement {
         }
         auto tex = new Texture(tabData.background);
         _background = new Sprite(tex);
+        if(resize) {
+            tabData.resize(cast(int) _background.size.x, cast(int) _background.size.y);
+        }
+        else {
+            _background.size = Vec2f(tabData.width, tabData.height);
+        }
     }
 
     void reload() {
@@ -228,6 +248,10 @@ final class Viewer: GuiElement {
                     addChildGui(label);
                     entity.setLabel(label);
                 }
+                _showGrid = _currentTabData.showGrid;
+            }
+            else {
+                _showGrid = false;
             }
 
             if(!tabData.hasViewerData) {
@@ -338,19 +362,18 @@ final class Viewer: GuiElement {
         }
 
         if(_showGrid) {
-            const Color c1 = Color(0.74f, 0.74f, 0.74f);
-            const Color c2 = Color(0.49f, 0.49f, 0.49f);
-            int x, y, i;
             const int snapValue = getSnapValue();
-            for(y = 0; y < _currentTabData.height; ++ y) {
-                for(x = 0; x < _currentTabData.width; ++ x) {
-                    drawFilledRect(
-                        Vec2f(x * snapValue, y * snapValue),
-                        Vec2f(snapValue, snapValue),
-                        i % 2 > 0 ? c1 : c2);
-                    i ++;
-                }
-                i ++;
+            for(int y = 0; y < _currentTabData.height; y += snapValue) {
+                drawLine(
+                        Vec2f(0, y),
+                        Vec2f(_currentTabData.width, y),
+                        Color.white);
+            }
+            for(int x = 0; x < _currentTabData.width; x += snapValue) {
+                drawLine(
+                        Vec2f(x, 0),
+                        Vec2f(x, _currentTabData.height),
+                        Color.white);
             }
         }
 

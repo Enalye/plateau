@@ -110,7 +110,7 @@ final class Editor: GuiElement {
         case dropFile:
             if(hasTab) {
                 setTabDataBackground(event.drop.filePath);
-                _viewer.reloadBackground();
+                _viewer.reloadBackground(true);
             }
             break;
         default:
@@ -127,7 +127,7 @@ final class Editor: GuiElement {
     void openSettings() {
         if(!hasTab())
             return;
-        auto modal = new MapSettings;
+        auto modal = new MapSettings(_viewer.getBackgroundSize());
         modal.setCallback(this, "settings");
         pushModalGui(modal);
     }

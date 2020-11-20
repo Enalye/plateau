@@ -10,6 +10,7 @@ final class MapSettings: GuiElement {
         InputField _widthField, _heightField;
         TextButton _applyBtn;
         uint _width, _height;
+        Vec2i _baseSize;
     }
 
     @property {
@@ -17,8 +18,9 @@ final class MapSettings: GuiElement {
         uint height() const { return _height; }
     }
 
-    this() {
-        size(Vec2f(500f, 500f));
+    this(Vec2i baseSize) {
+        _baseSize = baseSize;
+        size(Vec2f(600f, 300f));
         setAlign(GuiAlignX.center, GuiAlignY.center);
         
         if(hasTab()) {
@@ -138,7 +140,8 @@ final class MapSettings: GuiElement {
             triggerCallback();
             break;
         case "reset":
-            //TODO
+            _widthField.text = to!string(_baseSize.x);
+            _heightField.text = to!string(_baseSize.y);
             break;
         case "cancel":
             stopModalGui();

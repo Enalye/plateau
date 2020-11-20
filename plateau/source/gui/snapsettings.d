@@ -2,12 +2,17 @@ module gui.snapsettings;
 
 import std.conv: to;
 import atelier;
+import common;
 
 private {
     int _snapValue = 16;
 }
 
 int getSnapValue() {
+    if(hasTab()) {
+        TabData tabData = getCurrentTab();
+        return tabData.gridAlign;
+    }
     return _snapValue;
 }
 
@@ -36,7 +41,7 @@ final class SnapSettings: GuiElement {
 
             box.addChildGui(new Label("Alignement: "));
 
-            _snapField = new InputField(Vec2f(100f, 25f), to!string(_snapValue));
+            _snapField = new InputField(Vec2f(100f, 25f), to!string(getSnapValue()));
             _snapField.setAllowedCharacters("0123456789");
             _snapField.setCallback(this, "snap");
             box.addChildGui(_snapField);
@@ -97,7 +102,10 @@ final class SnapSettings: GuiElement {
             break;
         case "apply":
             try {
-                _snapValue = to!int(_snapField.text);
+                if(hasTab()) {
+                    TabData tabData = getCurrentTab();
+                    tabData.gridAlign = to!int(_snapField.text);
+                }
             }
             catch(Exception e) {}
             stopModalGui();
