@@ -211,12 +211,12 @@ final class Editor: GuiElement {
         if(!entity) {
             _editedEntity = entity;
             _entityProperties.setData(null);
-            _entityProperties.setState("hidden");
+            _entityProperties.doTransitionState("hidden");
             return;
         }
         _editedEntity = entity;
         _editedEntity.setEdit(true);
         _entityProperties.setData(_editedEntity);
-        _entityProperties.setState("visible");
+        _entityProperties.doTransitionState("visible");
     }
 }

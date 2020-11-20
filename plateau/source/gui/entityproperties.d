@@ -40,7 +40,9 @@ final class EntityProperties: GuiElement {
         //States
         GuiState hiddenState = {
             offset: Vec2f(-300f, 0f),
-            alpha: 0f
+            alpha: 0f,
+            time: .5f,
+            easing: getEasingFunction(Ease.sineIn)
         };
         addState("hidden", hiddenState);
 
@@ -50,7 +52,7 @@ final class EntityProperties: GuiElement {
         };
         addState("visible", visibleState);
 
-        setState("visible");
+        setState("hidden");
     }
 
     private void reload() {
@@ -215,7 +217,7 @@ final class EntityProperties: GuiElement {
             _ignoreCallbacks = false;
         }
         else {
-            _container.removeChildrenGuis();
+            _ignoreCallbacks = true;
             _currentEntity = null;
         }
     }

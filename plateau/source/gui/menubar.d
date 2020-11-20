@@ -23,17 +23,15 @@ final class MenuBar: GuiElement {
         auto box = new HContainer;
         addChildGui(box);
 
-        const auto menuNames = ["file", "edit", "settings"];
+        const auto menuNames = ["file", "settings"];
         const auto menuDisplayNames = ["Fichier", "Édition", "Paramètres"];
         const auto menuItems = [
-            ["file.open", "file.new", "file.close", "file.save", "file.saveas", "file.quit"],
-            ["edit.mapsettings"],
-            ["settings.snap", "settings.grid", "settings.fullscreen"]
+            ["file.new", "file.open", "file.close", "file.save", "file.saveas", "file.quit"],
+            ["edit.mapsettings", "settings.snap", "settings.grid", "settings.fullscreen"]
             ];
         const auto menuItemsDisplayNames = [
-            ["Ouvrir (Ctrl+O)", "Nouveau (Ctrl+N)", "Fermer", "Enregistrer (Ctrl+S)", "Enregistrer sous..", "Quitter"],
-            ["Réglages de la carte"],
-            ["Alignement sur la grille", "Afficher l'arrière-plan", "Plein écran (F12)"]
+            ["Nouveau (Ctrl+N)", "Ouvrir (Ctrl+O)", "Fermer", "Enregistrer (Ctrl+S)", "Enregistrer sous..", "Quitter"],
+            ["Taille de la carte", "Taille de la grille", "Afficher la grille", "Plein écran (F12)"]
             ];
         _menuSizes.length = menuNames.length;
         for(size_t i = 0uL; i < menuNames.length; ++ i) {
