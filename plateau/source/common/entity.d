@@ -26,6 +26,8 @@ final class Entity {
         Timer _fxTimer;
 
         TabData _tabData;
+
+        int _angle;
     }
 
     @property {
@@ -105,6 +107,15 @@ final class Entity {
             }
             return _alpha;
         }
+
+        int angle() const { return _angle; }
+        int angle(int angle_) {
+            if(_angle != angle_) {
+                _angle = angle_;
+                onEntityDirty();
+            }
+            return _angle;
+        }
     }
 
     this() {}
@@ -117,6 +128,7 @@ final class Entity {
         _sprite = entity._sprite;
         _color = entity._color;
         _alpha = entity._alpha;
+        _angle = entity._angle;
     }
 
     /// For loader only, not map loading
@@ -193,6 +205,7 @@ final class Entity {
         if(!_isSpawned)
             return;
         if(_currentSprite) {
+            _currentSprite.angle = cast(float) _angle;
             _currentSprite.size = _size;
             _currentSprite.color = _color;
             if(_isRemoved)
@@ -241,6 +254,7 @@ final class Entity {
         _position = Vec2i(getJsonInt(json, "x", 0), getJsonInt(json, "y", 0));
         _size = Vec2f(getJsonFloat(json, "w", 0), getJsonFloat(json, "h", 0));
         _name = getJsonStr(json, "name", "");
+        _angle = getJsonInt(json, "angle", 0);
 
         reload();
 
@@ -267,6 +281,7 @@ final class Entity {
         json["w"] = _size.x;
         json["h"] = _size.y;
         json["name"] = _name;
+        json["angle"] = _angle;
 
         JSONValue colorNode;
         colorNode["r"] = _color.r;

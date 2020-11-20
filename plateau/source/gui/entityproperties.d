@@ -13,7 +13,7 @@ final class EntityProperties: GuiElement {
         bool _ignoreCallbacks;
         Entity _currentEntity;
         VContainer _container;
-        HSlider _rSlider, _gSlider, _bSlider, _aSlider;
+        HSlider _rSlider, _gSlider, _bSlider, _aSlider, _angleSlider;
     }
 
     @property {
@@ -132,6 +132,24 @@ final class EntityProperties: GuiElement {
             _nameField.text = _currentEntity.name;
             _nameField.setCallback(this, "name");
             box.addChildGui(_nameField);
+        }
+        
+        { // Angle
+            auto box = new HContainer;
+            box.setAlign(GuiAlignX.left, GuiAlignY.center);
+            box.spacing = Vec2f(5f, 0f);
+            _container.addChildGui(box);
+
+            box.addChildGui(new Label("Angle:"));
+
+            _angleSlider = new HSlider;
+            _angleSlider.size = Vec2f(150f, 15f);
+            _angleSlider.min = 0f;
+            _angleSlider.max = 360f;
+            _angleSlider.step = 360;
+            _angleSlider.ivalue = _currentEntity.angle;
+            _angleSlider.setCallback(this, "angle");
+            box.addChildGui(_angleSlider);
         }
 
         {
@@ -297,6 +315,9 @@ final class EntityProperties: GuiElement {
             break;
         case "a":
             _currentEntity.alpha = _aSlider.fvalue;
+            break;
+        case "angle":
+            _currentEntity.angle = _angleSlider.ivalue;
             break;
         default:
             break;

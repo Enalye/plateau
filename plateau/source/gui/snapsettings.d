@@ -27,7 +27,7 @@ final class SnapSettings: GuiElement {
         setAlign(GuiAlignX.center, GuiAlignY.center);
 
         { //Title
-            auto title = new Label("Alignement sur la grille:");
+            auto title = new Label("Taille de la grille:");
             title.setAlign(GuiAlignX.left, GuiAlignY.top);
             title.position = Vec2f(20f, 10f);
             addChildGui(title);
