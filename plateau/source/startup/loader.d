@@ -7,7 +7,18 @@ import atelier;
 void loadAssets() {
     loadTextures();
     loadFonts();
+    loadSound();
     loadEntities();
+}
+
+void loadSound() {
+    auto soundCache = new ResourceCache!Sound;
+    setResourceCache!Sound(soundCache);
+
+    auto files = dirEntries(buildNormalizedPath("assets", "sound"), "{*.wav,*.ogg}", SpanMode.depth);
+    foreach(file; files) {
+        soundCache.set(new Sound(file), baseName(file, extension(file)));
+    }
 }
 
 void loadEntities() {

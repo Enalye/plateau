@@ -247,6 +247,7 @@ final class Viewer: GuiElement {
                     auto label = new Label;
                     addChildGui(label);
                     entity.setLabel(label);
+                    entity.setData(_currentTabData);
                 }
                 _showGrid = _currentTabData.showGrid;
             }

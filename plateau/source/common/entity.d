@@ -28,6 +28,7 @@ final class Entity {
         TabData _tabData;
 
         int _angle;
+        Animation _explosion;
     }
 
     @property {
@@ -178,17 +179,24 @@ final class Entity {
         if(_isRemoved)
             return;
         _isRemoved = true;
-        _fxTimer.start(5f);
+        _fxTimer.start(2f);
+        _explosion = fetch!Animation("explosion");
+        _explosion.start();
+        _explosion.size = _explosion.size.fit(_size) * 5f;
+        fetchPrototype!Sound("explosion").play();
     }
 
     void update(float deltaTime) {
         if(!_isSpawned)
             return;
         _fxTimer.update(deltaTime);
-        if(_isRemoved && !_fxTimer.isRunning) {
+        if(_isRemoved && !_explosion.isPlaying) {
             _tabData.removeEntity(this);
             if(_label)
                 _label.removeSelfGui();
+        }
+        if(_isRemoved) {
+            _explosion.update(deltaTime);
         }
 
         if(_label) {
@@ -215,7 +223,11 @@ final class Entity {
             _currentSprite.draw(cast(Vec2f) _position);
         }
 
-        if(!_isRemoved) {
+        if(_isRemoved) {
+            if(_explosion.isPlaying)
+                _explosion.draw(cast(Vec2f) _position);
+        }
+        else {
             if(_isEdited && _isGrabbed) {
                 drawRect((cast(Vec2f) _position) - (_size / 2f), _size, Color.blue);
             }
