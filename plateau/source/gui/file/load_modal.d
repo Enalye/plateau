@@ -42,7 +42,7 @@ final class LoadModal: GuiElement {
 
         auto files = dirEntries(buildNormalizedPath("assets", "map"), "{*.json}", SpanMode.shallow);
         foreach(file; files) {
-            string fileName = buildNormalizedPath("camp", baseName(stripExtension(file)));
+            string fileName = baseName(stripExtension(file));
             add(fileName);
         }
 

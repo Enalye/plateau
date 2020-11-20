@@ -208,6 +208,11 @@ final class Viewer: GuiElement {
     }
 
     void reload() {
+        if(_currentTabData) {
+            foreach (entity; _currentTabData.entities) {
+                entity.setLabel(null);
+            }
+        }
         if(hasTab()) {
             auto tabData = getCurrentTab();
             if(_currentTabData && _currentTabData != tabData) {
@@ -216,6 +221,14 @@ final class Viewer: GuiElement {
                 _currentTabData.viewerScale = _scale;
             }
             _currentTabData = tabData;
+
+            if(_currentTabData) {
+                foreach (entity; _currentTabData.entities) {
+                    auto label = new Label;
+                    addChildGui(label);
+                    entity.setLabel(label);
+                }
+            }
 
             if(!tabData.hasViewerData) {
                 //Reset camera position
@@ -250,7 +263,8 @@ final class Viewer: GuiElement {
                 entity.position = _entitySelector.targetPosition;
                 auto label = new Label;
                 addChildGui(label);
-                entity.setData(_currentTabData, label);
+                entity.setLabel(label);
+                entity.setData(_currentTabData);
                 _currentTabData.addEntity(entity);
                 _editor.editEntity(entity);
             }

@@ -129,11 +129,19 @@ final class Entity {
         }
     }
 
-    void setData(TabData tabData, Label label) {
-        _tabData = tabData;
+    void setLabel(Label label) {
+        if(_label) {
+            _label.removeSelfGui();
+        }
         _label = label;
-        _label.text = _name;
-        _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
+        if(_label) {
+            _label.text = _name;
+            _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
+        }
+    }
+
+    void setData(TabData tabData, ) {
+        _tabData = tabData;
     }
 
     void reload() {
@@ -173,10 +181,11 @@ final class Entity {
 
         if(_label) {
             _label.position = (cast(Vec2f) _position) + Vec2f(-_label.size.x / 2f, -(_labelOffset + (_size.y / 2f)));
+            _label.color = _color;
             if(_isRemoved)
-                _label.alpha = lerp(1f, 0f, easeInOutSine(_fxTimer.value01));
+                _label.alpha = lerp(_alpha, 0f, easeInOutSine(_fxTimer.value01));
             else
-                _label.alpha = 1f;
+                _label.alpha = _alpha;
         }
     }
 

@@ -286,8 +286,9 @@ private void _loadData(TabData tabData) {
     JSONValue json = parseJSON(readText(tabData._dataPath));
     if(getJsonStr(json, "type") != "map")
         return;
-    tabData._width = getJsonInt(json, "width");
-    tabData._height = getJsonInt(json, "height");
+    tabData._width = getJsonInt(json, "width", 0);
+    tabData._height = getJsonInt(json, "height", 0);
+    tabData._background = getJsonStr(json, "background", "");
 
     if(hasJson(json, "entities")) {
         JSONValue[] entitiesNode = getJsonArray(json, "entities");
@@ -305,6 +306,7 @@ private void _saveData(TabData tabData) {
     json["type"] = "map";
     json["width"] = tabData._width;
     json["height"] = tabData._height;
+    json["background"] = tabData._background;
 
     JSONValue[] entitiesNode;
     foreach (Entity entity; tabData._entities) {
